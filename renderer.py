@@ -27,8 +27,7 @@ def render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_w
                     else:
                         tcod.console_set_char_background(con, x, y, colors.get('light_ground'), tcod.BKGND_SET)
                     game_map.tiles[x][y].explored = True
-                # elif game_map.tiles[x][y].explored:
-                else: # REMEMBER TO CHANGE!!
+                elif game_map.tiles[x][y].explored:
                     if wall:
                         tcod.console_set_char_background(con, x, y, colors.get('dark_wall'), tcod.BKGND_SET)
                     else:
@@ -81,6 +80,7 @@ def render_bar(console, x, y, total_width, name, value, maximum, bar_color, back
     if bar_width > 0:
         tcod.console_rect(console, x, y, bar_width, 1, False, tcod.BKGND_SCREEN)
 
+    tcod.console_set_default_background(console, tcod.black)
     tcod.console_print_ex(console, int(x + total_width / 2), y, tcod.BKGND_NONE, tcod.CENTER,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 

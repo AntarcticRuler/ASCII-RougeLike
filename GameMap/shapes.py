@@ -1,3 +1,5 @@
+from random import randint
+
 class Rect:
     def __init__(self, x, y, w, h):
         self.type = 'Rect'
@@ -5,11 +7,21 @@ class Rect:
         self.y1 = y
         self.x2 = x + w
         self.y2 = y + h
+        self.w = w
+        self.h = h
 
     def center(self):
         center_x = int((self.x1 + self.x2) / 2)
         center_y = int((self.y1 + self.y2) / 2)
         return (center_x, center_y)
+
+    def door (self):
+        return [
+            (int(self.center()[0] + self.w/2 + 1), self.center()[1]),
+            (int(self.center()[0] - self.w/2 - 1), self.center()[1]),
+            (self.center()[0], int(self.center()[1] - self.h/2 - 1)),
+            (self.center()[0], int(self.center()[1] + self.h/2 + 1)),
+        ]
 
     def intersect(self, other):
         # returns true if this rectangle intersects with another one
@@ -55,7 +67,7 @@ class Circle:
                     coords.append( (self.center_x - change_x, y) )
                     coords.append( (x, self.center_y - change_y) )
                     coords.append( (self.center_x - change_x, self.center_y - change_y) )
-                
+
         return coords
 
     def in_circle(self, x, y):
@@ -64,6 +76,14 @@ class Circle:
 
     def center(self):
         return (self.center_x, self.center_y)
+
+    def door (self):
+        return [
+            (int(self.center_x + self.r), self.center_y),
+            (int(self.center_x - self.r), self.center_y),
+            (self.center_x, int(self.center_y - self.r)),
+            (self.center_x, int(self.center_y + self.r)),
+        ]
 
     def intersect(self, other):
         if (other.type == 'Rect'):

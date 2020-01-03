@@ -36,11 +36,11 @@ class GameMap:
             return
 
         # random width and height
+        # if (iterations > 2/3 * maxIterations):
+        #     w = randint(int (room_min_size * 1/2), int (room_max_size * 1/2))
+        #     h = randint(int (room_min_size * 1/2), int (room_max_size * 1/2))
+        #     r = int((w + h) / 3)
         if (iterations > 2/3 * maxIterations):
-            w = randint(int (room_min_size * 1/2), int (room_max_size * 1/2))
-            h = randint(int (room_min_size * 1/2), int (room_max_size * 1/2))
-            r = int((w + h) / 3)
-        elif (iterations > 1/3 * maxIterations):
             w = randint(int (room_min_size * 2/3), int (room_max_size * 2/3))
             h = randint(int (room_min_size * 2/3), int (room_max_size * 2/3))
             r = int((w + h) / 2.5)
@@ -76,23 +76,6 @@ class GameMap:
                 # this is the first room, where the player starts at
                 player.x = new_x
                 player.y = new_y
-            else:
-                # all rooms after the first:
-                # connect it to the previous room with a tunnel
-                # center coordinates of previous room
-                (prev_x, prev_y) = rooms[num_rooms - 1].center()
-
-                # flip a coin (random number that is either 0 or 1)
-                # if randint(0, 3) == 1:
-                #     # first move horizontally, then vertically
-                #     self.create_h_tunnel(prev_x, new_x, prev_y)
-                #     self.create_v_tunnel(prev_y, new_y, new_x)
-                # elif randint(0, 2) == 1:
-                #     # first move vertically, then horizontally
-                #     self.create_v_tunnel(prev_y, new_y, prev_x)
-                #     self.create_h_tunnel(prev_x, new_x, new_y)
-                # else:
-                #     pass
 
             # Places entities in the room
             self.place_entities(new_room, entities, max_monsters_per_room)
@@ -107,18 +90,23 @@ class GameMap:
         # go through the tiles in the rectangle and make them passable
         print (room.type)
 
+        doors = room.door()
         try:
-            if (room.type == 'Rect'):
-                for x in range(room.x1 + 1, room.x2):
-                    for y in range(room.y1 + 1, room.y2):
-                        self.tiles[x][y].blocked = False
-                        self.tiles[x][y].block_sight = False
-            elif (room.type == 'Circle'):
-                for coord in room.coords:
-                    self.tiles[coord[0]][coord[1]].blocked = False
-                    self.tiles[coord[0]][coord[1]].block_sight = False
+            for door in doors:
+                door_x, door_y = door
+                self.tiles[door_x][door_y].door = True
         except:
             pass
+
+        if (room.type == 'Rect'):
+            for x in range(room.x1 + 1, room.x2):
+                for y in range(room.y1 + 1, room.y2):
+                    self.tiles[x][y].blocked = False
+                    self.tiles[x][y].block_sight = False
+        elif (room.type == 'Circle'):
+            for coord in room.coords:
+                self.tiles[coord[0]][coord[1]].blocked = False
+                self.tiles[coord[0]][coord[1]].block_sight = False
 
     def getXY_Rect (self, w, h):
         x = randint(w, self.width - w - 1)
@@ -142,31 +130,30 @@ class GameMap:
         for tileList in self.tiles:
             for tile in tileList:
                 if tile.blocked:
-                    # try:
-                    if not self.on_exterior(newTiles, tile) and self.intersect_room(newTiles, tile):
+                    if not self.on_exterior(tile) and self.intersect_room(newTiles, tile):
                         tile.blocked = False
                         tile.block_sight = False
-                    # except:
-                    #     pass
+
+    def genDoors (self):
+        for tileList in self.tiles:
+            for tile in tileList:
+                if (tile.door):
+                    print ("DOOR")
+                    tile.blocked = False
+                    tile.block_sight = False
 
     # Does the tile intersect a room?
     def intersect_room (self, tiles, tile):
         return tiles[tile.x + 1][tile.y].blocked and tiles[tile.x - 1][tile.y].blocked and tiles[tile.x][tile.y + 1].blocked and tiles[tile.x][tile.y - 1].blocked and tiles[tile.x - 1][tile.y - 1].blocked and tiles[tile.x + 1][tile.y + 1].blocked and tiles[tile.x + 1][tile.y - 1].blocked and tiles[tile.x - 1][tile.y + 1].blocked
 
-    def on_exterior (self, tiles, tile):
+    def on_exterior (self, tile):
         return tile.x <= 1 or tile.x >= self.width - 1 or tile.y <= 1 or tile.y >= self.height - 1
 
-    # Creates a horizontal tunnel
-    def create_h_tunnel(self, x1, x2, y):
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
-
-    # Creates a vertical tunnel
-    def create_v_tunnel(self, y1, y2, x):
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
+    # def add_doors (self, tiles, tile):
+    #     if (self.intersect_room, tiles, tile):
+    #         if (randint (0, 3) == 1):
+    #             tile.blocked = False
+    #             tile.block_sight = False
 
     def place_entities(self, room, entities, max_monsters_per_room):
         # Get a random number of monsters

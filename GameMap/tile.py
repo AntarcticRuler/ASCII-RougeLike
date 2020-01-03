@@ -9,6 +9,8 @@ class Tile:
 
         self.x = x
         self.y = y
+
+        self.door = False
         
         # By default, if a tile is blocked, it also blocks sight
         if block_sight is None:

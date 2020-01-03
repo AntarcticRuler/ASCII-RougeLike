@@ -39,6 +39,7 @@ entities = [player]
 game_map = GameMap(SCREEN_WIDTH, SCREEN_HEIGHT)
 game_map.generate(player, entities, max_monsters_per_room=3, room_max_size = 12, room_min_size = 6, max_rooms = 75)
 game_map.genMainTunnels()
+game_map.genDoors()
 
 fov_algorithm = 0
 fov_light_walls = True
