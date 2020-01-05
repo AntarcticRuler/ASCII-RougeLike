@@ -65,8 +65,13 @@ def renderSidePanel (console, entities, fov_map):
 
     if (entitiesHighlighted):
         for entity in entitiesHighlighted:
+            # Prints name of entity
+            tcod.console_set_default_background(console, tcod.white)
+            tcod.console_print_ex(console, x_zero + 1, 1, tcod.BKGND_NONE, tcod.LEFT, entity.name)
+
+            # Prints health bar of entity
             if (entity.ai):
-                render_bar(console, x_zero + 1, 1, 20, 'HP', entity._class.hp, entity._class.max_hp,
+                render_bar(console, x_zero + 1, 3, 20, 'HP', entity._class.hp, entity._class.max_hp,
                         tcod.light_red, tcod.darker_red)
 
 # Renders a bar for health/stamina/mana

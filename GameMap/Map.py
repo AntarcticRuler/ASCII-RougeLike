@@ -10,6 +10,9 @@ from components import enemyAI
 
 from renderer import RenderOrder
 
+from Entities.items import *
+from Entities.enemies import *
+
 class GameMap:
     def __init__(self, width, height):
         self.width = width
@@ -27,7 +30,7 @@ class GameMap:
         return tiles
 
     # Generates the map
-    def generate(self, player, entities, rooms=[], max_monsters_per_room=3, room_max_size=10, room_min_size = 5, max_rooms = 75, num_rooms = 0, maxIterations = 800, iterations = 0):
+    def generate(self, player, entities, rooms=[], max_monsters_per_room=3, max_items_per_room=2, room_max_size=10, room_min_size = 5, max_rooms = 75, num_rooms = 0, maxIterations = 800, iterations = 0):
         print (num_rooms)
 
         if (num_rooms == max_rooms):
@@ -78,7 +81,7 @@ class GameMap:
                 player.y = new_y
 
             # Places entities in the room
-            self.place_entities(new_room, entities, max_monsters_per_room)
+            self.place_entities(new_room, entities, max_monsters_per_room, max_items_per_room)
 
             # finally, append the new room to the list
             rooms.append(new_room)
@@ -134,11 +137,11 @@ class GameMap:
                         tile.blocked = False
                         tile.block_sight = False
 
+    # Generates the doors on the map
     def genDoors (self):
         for tileList in self.tiles:
             for tile in tileList:
                 if (tile.door):
-                    print ("DOOR")
                     tile.blocked = False
                     tile.block_sight = False
 
@@ -146,18 +149,15 @@ class GameMap:
     def intersect_room (self, tiles, tile):
         return tiles[tile.x + 1][tile.y].blocked and tiles[tile.x - 1][tile.y].blocked and tiles[tile.x][tile.y + 1].blocked and tiles[tile.x][tile.y - 1].blocked and tiles[tile.x - 1][tile.y - 1].blocked and tiles[tile.x + 1][tile.y + 1].blocked and tiles[tile.x + 1][tile.y - 1].blocked and tiles[tile.x - 1][tile.y + 1].blocked
 
+    # Does the tile fall on the exterior of the map?
     def on_exterior (self, tile):
         return tile.x <= 1 or tile.x >= self.width - 1 or tile.y <= 1 or tile.y >= self.height - 1
 
-    # def add_doors (self, tiles, tile):
-    #     if (self.intersect_room, tiles, tile):
-    #         if (randint (0, 3) == 1):
-    #             tile.blocked = False
-    #             tile.block_sight = False
-
-    def place_entities(self, room, entities, max_monsters_per_room):
+    # Places all entites on the map
+    def place_entities(self, room, entities, max_monsters_per_room, max_items_per_room):
         # Get a random number of monsters
         number_of_monsters = randint(0, max_monsters_per_room)
+        number_of_items = randint(0, max_items_per_room)
 
         for i in range(number_of_monsters):
             # Choose a random location in the room
@@ -171,11 +171,21 @@ class GameMap:
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 if randint(0, 100) < 80:
-                    monster = Entity(x, y, 'o', tcod.desaturated_green, 'Orc', blocks=True, renderOrder=RenderOrder.ACTOR, _class=classes.Fighter(hp=5, defense=0, power=3), ai=enemyAI.BasicMonster(), target=player)
+                    monster = Orc(x, y, target=player).get()
                 else:
-                    monster = Entity(x, y, 'T', tcod.darker_green, 'Troll', blocks=True, renderOrder=RenderOrder.ACTOR, _class=classes.Fighter(hp=10, defense=0, power=3), ai=enemyAI.BasicMonster(), target=player)
+                    monster = Troll(x, y, target=player).get()
 
                 entities.append(monster)
+            
+        for i in range(number_of_items):
+            if (room.type == 'Rect'):
+                x = randint(room.x1 + 1, room.x2 - 1)
+                y = randint(room.y1 + 1, room.y2 - 1)
+            elif (room.type == 'Circle'):
+                x, y = choice (room.coords)
+
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                entities.append(HealingPotion(x, y).get())
     
     def get_blocking_entities_at_location(self, entities, destination_x, destination_y):
         for entity in entities:

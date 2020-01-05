@@ -4,7 +4,7 @@ import math
 from renderer import RenderOrder
 
 class Entity:
-    def __init__(self, x, y, char, color, name, blocks=False, _class=None, renderOrder=RenderOrder.CORPSE, ai=None, target=None):
+    def __init__(self, x, y, char, color, name, blocks=False, _class=None, item=None, inventory=None, renderOrder=RenderOrder.CORPSE, ai=None, target=None):
         self.x = x
         self.y = y
         self.char = char
@@ -15,12 +15,20 @@ class Entity:
         self.ai = ai
         self.target = target
         self.renderOrder = renderOrder
+        self.item = item
+        self.inventory = inventory
 
         if self._class:
             self._class.owner = self
 
         if self.ai:
             self.ai.owner = self
+
+        if self.item:
+            self.item.owner = self
+
+        if self.inventory:
+            self.inventory.owner = self
 
     def move(self, dx, dy):
         # Move the entity by a given amount
